@@ -9,6 +9,8 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -84,6 +86,12 @@ public class SongListActivity extends AppCompatActivity implements LoaderManager
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         mAdapter.swapCursor(data);
+        if(data.getCount() == 0)
+        {
+            Snackbar snackbar = Snackbar
+                    .make(((CoordinatorLayout)findViewById(R.id.coordLayout)), "No songs on Device :(", Snackbar.LENGTH_INDEFINITE);
+            snackbar.show();
+        }
     }
 
     @Override
