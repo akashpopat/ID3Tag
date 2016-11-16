@@ -12,16 +12,20 @@
     <string name="writing_msg">Writing!</string>
     <string name="data_not_written_msg">Data not written</string>
     <string name="file_corrupted_msg">Music file is corrupted!</string>
-    <string name="ok_msg">Ok</string>
+    <string name="ok_msg">OK</string>
     <string name="done_msg">Done!</string>
     <string name="ID3TAG_album_extra">ID3TAG_</string>
     <string name="no_msg">No</string>
     <string name="media_refreshing_msg">Media refreshing</string>
     <string name="restart_app_see_change_msg">You may have to restart the app in which you may want to see the change</string>
-    <string name="permission_dialog_msg">Cant use app without permission!</string>
+    <string name="permission_dialog_msg">Cannot use app without permission!</string>
     <string name="retry_msg">Retry</string>
     <string name="quit_msg">Quit</string>
     <string name="no_songs_msg">No songs on Device :(</string>
     <string name="search_button">Search</string>
     <string name="empty_songs_list">No songs fixed yet</string>
+    <string name="connection_error_log_msg">couldnt get data</string>
+    <string name="album_image_content_description">Album Image</string>
+    <string name="advertisment">advertisment</string>
+    <string name="search_button_content_description">Search Button</string>
 </resources>

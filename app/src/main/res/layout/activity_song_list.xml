@@ -14,8 +14,9 @@
         android:layout_height="wrap_content"
         ads:adSize="SMART_BANNER"
         android:layout_alignParentBottom="true"
-        android:layout_gravity="center|bottom">
-    </com.google.android.gms.ads.AdView>
+        android:layout_gravity="center|bottom"
+        android:contentDescription="@string/advertisment"/>
+
 
     <android.support.design.widget.CoordinatorLayout
         android:id="@+id/coordLayout"

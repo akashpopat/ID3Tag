@@ -15,7 +15,8 @@
         <ImageView
             android:layout_width="70dp"
             android:layout_height="70dp"
-            android:id="@+id/albumImage" />
+            android:id="@+id/albumImage"
+            android:contentDescription="@string/album_image_content_description"/>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -28,7 +29,8 @@
                 android:id="@+id/titleText"
                 android:layout_weight="1"
                 android:textSize="22sp"
-                android:ellipsize="marquee"/>
+                android:maxLines="1"
+                android:ellipsize="marquee" />
             <TextView
                 tools:text="Drake"
                 android:layout_width="match_parent"
@@ -36,6 +38,7 @@
                 android:id="@+id/artistText"
                 android:layout_weight="1"
                 android:textSize="18sp"
+                android:maxLines="1"
                 android:ellipsize="marquee"/>
         </LinearLayout>
     </LinearLayout>

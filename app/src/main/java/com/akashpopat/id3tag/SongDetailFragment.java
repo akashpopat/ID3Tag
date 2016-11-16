@@ -5,8 +5,10 @@ import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Bitmap.CompressFormat;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.media.MediaScannerConnection;
@@ -22,6 +24,7 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.media.VolumeProviderCompat;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AlertDialog.Builder;
 import android.support.v7.widget.AppCompatSpinner;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -31,12 +34,17 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.akashpopat.id3tag.R.id;
+import com.akashpopat.id3tag.R.layout;
+import com.akashpopat.id3tag.R.string;
 import com.akashpopat.id3tag.database.SongColumns;
 import com.akashpopat.id3tag.database.SongsProvider;
+import com.akashpopat.id3tag.database.SongsProvider.Songs;
 import com.mpatric.mp3agic.ID3v2;
 import com.mpatric.mp3agic.ID3v24Tag;
 import com.mpatric.mp3agic.Mp3File;
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Picasso.LoadedFrom;
 import com.squareup.picasso.Target;
 
 import org.jaudiotagger.audio.AudioFile;
@@ -115,7 +123,7 @@ public class SongDetailFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (getArguments().containsKey(SONG_DATA)) {
+        if (this.getArguments().containsKey(SongDetailFragment.SONG_DATA)) {
             // Load the dummy content specified by the fragment
             // arguments. In a real-world scenario, use a Loader
             // to load content from a content provider.
@@ -123,18 +131,18 @@ public class SongDetailFragment extends Fragment {
 
             try {
                 TagOptionSingleton.getInstance().setAndroid(true);
-                AudioFile file = AudioFileIO.read(new File(getArguments().getString(SONG_DATA)));
-                mLocation = getArguments().getString(SONG_DATA);
-                mTitle = file.getTag().getFirst(FieldKey.TITLE);
-                if(mTitle.equals("")){
-                    mTitle = file.getFile().getName();
+                AudioFile file = AudioFileIO.read(new File(this.getArguments().getString(SongDetailFragment.SONG_DATA)));
+                this.mLocation = this.getArguments().getString(SongDetailFragment.SONG_DATA);
+                this.mTitle = file.getTag().getFirst(FieldKey.TITLE);
+                if(this.mTitle.equals("")){
+                    this.mTitle = file.getFile().getName();
                 }
-                mArtist = file.getTag().getFirst(FieldKey.ARTIST);
-                mArt  = BitmapFactory.decodeByteArray(file.getTag().getFirstArtwork().getBinaryData(), 0, file.getTag().getFirstArtwork().getBinaryData().length);
+                this.mArtist = file.getTag().getFirst(FieldKey.ARTIST);
+                this.mArt = BitmapFactory.decodeByteArray(file.getTag().getFirstArtwork().getBinaryData(), 0, file.getTag().getFirstArtwork().getBinaryData().length);
             } catch (Exception e) {
                 e.printStackTrace();
-                mTitle = new File(getArguments().getString(SONG_DATA)).getName();
-                mLocation = getArguments().getString(SONG_DATA);
+                this.mTitle = new File(this.getArguments().getString(SongDetailFragment.SONG_DATA)).getName();
+                this.mLocation = this.getArguments().getString(SongDetailFragment.SONG_DATA);
             }
         }
     }
@@ -142,29 +150,29 @@ public class SongDetailFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        mContext = context;
+        this.mContext = context;
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.song_detail, container, false);
+        View rootView = inflater.inflate(layout.song_detail, container, false);
 
         // Show the dummy content as text in a TextView.
-        if (mTitle != null) {
-            mTitleTextView = (TextView) rootView.findViewById(R.id.titleDetailText);
-            mTitleTextView.setText(mTitle);
-            mArtistTextView = (TextView) rootView.findViewById(R.id.artistDetailText);
-            mArtistTextView.setText(mArtist);
-            mLocationTextView = (TextView) rootView.findViewById(R.id.locationDetailText);
-            mLocationTextView.setText(mLocation);
-            mArtImageView = (ImageView) rootView.findViewById(R.id.imageDetailArt);
-            mArtImageView.setImageBitmap(mArt);
-            searchButton = (Button) rootView.findViewById(R.id.searchButton);
-            searchButton.setOnClickListener(new View.OnClickListener() {
+        if (this.mTitle != null) {
+            this.mTitleTextView = (TextView) rootView.findViewById(id.titleDetailText);
+            this.mTitleTextView.setText(this.mTitle);
+            this.mArtistTextView = (TextView) rootView.findViewById(id.artistDetailText);
+            this.mArtistTextView.setText(this.mArtist);
+            this.mLocationTextView = (TextView) rootView.findViewById(id.locationDetailText);
+            this.mLocationTextView.setText(this.mLocation);
+            this.mArtImageView = (ImageView) rootView.findViewById(id.imageDetailArt);
+            this.mArtImageView.setImageBitmap(this.mArt);
+            this.searchButton = (Button) rootView.findViewById(id.searchButton);
+            this.searchButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    searchOnline(mTitle,mArtist);
+                    SongDetailFragment.this.searchOnline(SongDetailFragment.this.mTitle, SongDetailFragment.this.mArtist);
                 }
             });
         }
@@ -174,35 +182,33 @@ public class SongDetailFragment extends Fragment {
     }
 
     private void searchOnline(String mTitle, String mArtist) {
-        mProgress = new ProgressDialog(mContext);
-        mProgress.setMessage(getString(R.string.searching_dialog_msg));
-        mProgress.setIndeterminate(true);
-        mProgress.show();
+        this.mProgress = new ProgressDialog(this.mContext);
+        this.mProgress.setMessage(this.getString(string.searching_dialog_msg));
+        this.mProgress.setIndeterminate(true);
+        this.mProgress.show();
         new getShazamInfo().execute(mTitle + " " + mArtist);
     }
 
     class getShazamInfo extends AsyncTask<String,Void,String[]> {
 
-        String shazamBaseUrl = getString(R.string.shazam_api_base_url);
-        String fileName;
+        String shazamBaseUrl = SongDetailFragment.this.getString(string.shazam_api_base_url);
 
         @Override
         protected void onPostExecute(String[] strings) {
-            mProgress.dismiss();
+            SongDetailFragment.this.mProgress.dismiss();
             if(strings == null)
             {
                 Snackbar snackbar = Snackbar
-                        .make((rootView.findViewById(R.id.detailLinear)), R.string.no_internet_snackbar_msg, Snackbar.LENGTH_INDEFINITE);
+                        .make(SongDetailFragment.this.rootView.findViewById(id.detailLinear), string.no_internet_snackbar_msg, Snackbar.LENGTH_INDEFINITE);
                 snackbar.show();
                 return;
             }
-            postExecuteStuff(strings[0],strings[1],strings[2]);
+            SongDetailFragment.this.postExecuteStuff(strings[0],strings[1],strings[2]);
         }
 
         @Override
         protected String[] doInBackground(String... params) {
 
-            fileName = params[0].replaceAll("%20", " ");
             String source = null;
 
             final HttpUrl[] cookUrl = new HttpUrl[1];
@@ -212,21 +218,21 @@ public class SongDetailFragment extends Fragment {
 
                         @Override
                         public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
-                            cookieStore.put(url, cookies);
-                            if(url.toString().equals(getString(R.string.shazam_website_link)))
+                            this.cookieStore.put(url, cookies);
+                            if(url.toString().equals(SongDetailFragment.this.getString(string.shazam_website_link)))
                                 cookUrl[0] = url;
                         }
 
                         @Override
                         public List<Cookie> loadForRequest(HttpUrl url) {
-                            List<Cookie> cookies = cookieStore.get(cookUrl[0]);
+                            List<Cookie> cookies = this.cookieStore.get(cookUrl[0]);
                             return cookies != null ? cookies : new ArrayList<Cookie>();
                         }
                     })
                     .build();
 
             Request Frequest = new Request.Builder()
-                    .url(getString(R.string.shazam_website_link))
+                    .url(SongDetailFragment.this.getString(string.shazam_website_link))
                     .build();
 
             try {
@@ -240,7 +246,7 @@ public class SongDetailFragment extends Fragment {
             }
 
             Request request = new Request.Builder()
-                    .url(shazamBaseUrl + params[0].substring(0,20))
+                    .url(this.shazamBaseUrl + params[0].replaceAll("[^A-Za-z0-9]", "").substring(0,20))
                     .build();
 
             Response response = null;
@@ -249,6 +255,7 @@ public class SongDetailFragment extends Fragment {
                 source = response.body().string();
             } catch (IOException e) {
                 e.printStackTrace();
+                Log.d("SongDetail", SongDetailFragment.this.getString(string.connection_error_log_msg));
             }
             String data[] = new String[3];
             if(source != null) {
@@ -272,18 +279,18 @@ public class SongDetailFragment extends Fragment {
     }
     Target target = new Target() {
         @Override
-        public void onBitmapLoaded(final Bitmap bitmap, Picasso.LoadedFrom from) {
+        public void onBitmapLoaded(Bitmap bitmap, LoadedFrom from) {
             File file = null;
             try {
                 file = new File(
-                        mContext.getCacheDir().getAbsolutePath()
-                                + "/." + mArtist + ".jpg");
+                        SongDetailFragment.this.mContext.getCacheDir().getAbsolutePath()
+                                + "/." + SongDetailFragment.this.mArtist + ".jpg");
             }catch (Exception e){
             }
             try {
                 file.createNewFile();
                 FileOutputStream ostream = new FileOutputStream(file);
-                bitmap.compress(Bitmap.CompressFormat.JPEG,100,ostream);
+                bitmap.compress(CompressFormat.JPEG,100,ostream);
                 ostream.close();
             }
             catch (Exception e) {
@@ -303,22 +310,22 @@ public class SongDetailFragment extends Fragment {
     };
 
     private void postExecuteStuff(final String title, final String artist, String albumArt) {
-        mTitleTextView.setText(title);
-        mArtistTextView.setText(artist);
+        this.mTitleTextView.setText(title);
+        this.mArtistTextView.setText(artist);
 
-        Picasso.with(mContext).load(albumArt).into(mArtImageView);
-        Picasso.with(mContext).load(albumArt).into(target);
+        Picasso.with(this.mContext).load(albumArt).into(this.mArtImageView);
+        Picasso.with(this.mContext).load(albumArt).into(this.target);
         final File artFile = new File(
-                mContext.getCacheDir().getAbsolutePath()
-                        + "/." + mArtist + ".jpg");
+                this.mContext.getCacheDir().getAbsolutePath()
+                        + "/." + this.mArtist + ".jpg");
 
-        new AlertDialog.Builder(mContext).setTitle(R.string.write_to_file_msg)
+        new Builder(this.mContext).setTitle(string.write_to_file_msg)
                 .setMessage("Is this information correct ?\n\nTtitle: " + title+"\n\n"+"Artist: " + artist)
-                .setPositiveButton(R.string.yes_msg, new DialogInterface.OnClickListener() {
+                .setPositiveButton(string.yes_msg, new OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        mProgress.setTitle(getString(R.string.writing_msg));
-                        mProgress.show();
+                        SongDetailFragment.this.mProgress.setTitle(SongDetailFragment.this.getString(string.writing_msg));
+                        SongDetailFragment.this.mProgress.show();
 
                         try {
 
@@ -344,34 +351,34 @@ public class SongDetailFragment extends Fragment {
 //                            MP3File f = (MP3File) AudioFileIO.read(new File(mLocation));
 
                             Tag tag;
-                            if(mLocation.endsWith("mp3")) {
-                                MP3File f = new MP3File(new File(mLocation));
+                            if(SongDetailFragment.this.mLocation.endsWith("mp3")) {
+                                MP3File f = new MP3File(new File(SongDetailFragment.this.mLocation));
                                 tag = f.getTagAndConvertOrCreateAndSetDefault();
                                 tagThem(tag);
 //                            AudioFileIO.write(f);
                                 f.commit();
                             }
                             else {
-                                AudioFile f = AudioFileIO.read(new File(mLocation));
+                                AudioFile f = AudioFileIO.read(new File(SongDetailFragment.this.mLocation));
                                 tag = f.getTag();
                                 tagThem(tag);
 //                            AudioFileIO.write(f);
                                 f.commit();
                             }
                         } catch (Exception e) {
-                            new AlertDialog.Builder(mContext)
-                                    .setTitle(R.string.data_not_written_msg)
-                                    .setMessage(R.string.file_corrupted_msg)
-                                    .setPositiveButton(R.string.ok_msg,null)
+                            new Builder(SongDetailFragment.this.mContext)
+                                    .setTitle(string.data_not_written_msg)
+                                    .setMessage(string.file_corrupted_msg)
+                                    .setPositiveButton(string.ok_msg,null)
                                     .show();
                             e.printStackTrace();
                         }
-                        mProgress.dismiss();
+                        SongDetailFragment.this.mProgress.dismiss();
                         Snackbar snackbar = Snackbar
-                                .make((rootView.findViewById(R.id.detailLinear)), R.string.done_msg, Snackbar.LENGTH_SHORT);
+                                .make(SongDetailFragment.this.rootView.findViewById(id.detailLinear), string.done_msg, Snackbar.LENGTH_SHORT);
                         snackbar.show();
-                        scanFile(mContext,mLocation);
-                        addToDB(title,artist,mLocation);
+                        SongDetailFragment.scanFile(SongDetailFragment.this.mContext, SongDetailFragment.this.mLocation);
+                        SongDetailFragment.this.addToDB(title,artist, SongDetailFragment.this.mLocation);
                     }
 
                     private void tagThem(Tag tag) throws FieldDataInvalidException, IOException {
@@ -382,7 +389,7 @@ public class SongDetailFragment extends Fragment {
                         }catch (Exception ignored){}
                         tag.setField(FieldKey.ARTIST,artist);
                         tag.setField(FieldKey.TITLE,title);
-                        tag.setField(FieldKey.ALBUM,getString(R.string.ID3TAG_album_extra)+artist);
+                        tag.setField(FieldKey.ALBUM, SongDetailFragment.this.getString(string.ID3TAG_album_extra)+artist);
                         if(artFile.exists()) {
                             Artwork artwork = ArtworkFactory.createArtworkFromFile(artFile);
                             tag.addField(artwork);
@@ -390,7 +397,7 @@ public class SongDetailFragment extends Fragment {
                         }
                     }
                 })
-                .setNegativeButton(R.string.no_msg,null)
+                .setNegativeButton(string.no_msg,null)
                 .show();
 
 
@@ -403,14 +410,14 @@ public class SongDetailFragment extends Fragment {
         cv.put(SongColumns.ARTIST,artist);
         cv.put(SongColumns.DATA,mLocation);
 
-        mContext.getContentResolver().insert(SongsProvider.Songs.CONTENT_URI,cv);
-        updateWidgets();
+        this.mContext.getContentResolver().insert(Songs.CONTENT_URI,cv);
+        this.updateWidgets();
     }
 
     private void updateWidgets() {
-        Context context = mContext;
+        Context context = this.mContext;
         // Setting the package ensures that only components in our app will receive the broadcast
-        Intent dataUpdatedIntent = new Intent(ACTION_DATA_UPDATED)
+        Intent dataUpdatedIntent = new Intent(SongDetailFragment.ACTION_DATA_UPDATED)
                 .setPackage(context.getPackageName());
         context.sendBroadcast(dataUpdatedIntent);
     }
@@ -422,9 +429,9 @@ public class SongDetailFragment extends Fragment {
                 null,
                 null);
 
-        new AlertDialog.Builder(context).setTitle(R.string.media_refreshing_msg)
-                .setMessage(R.string.restart_app_see_change_msg)
-                .setPositiveButton( R.string.ok_msg,null)
+        new Builder(context).setTitle(string.media_refreshing_msg)
+                .setMessage(string.restart_app_see_change_msg)
+                .setPositiveButton( string.ok_msg,null)
                 .show();
     }
 }

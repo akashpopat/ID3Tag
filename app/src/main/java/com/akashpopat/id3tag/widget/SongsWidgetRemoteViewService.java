@@ -3,13 +3,18 @@ package com.akashpopat.id3tag.widget;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Build;
+import android.os.Build.VERSION;
+import android.os.Build.VERSION_CODES;
 import android.widget.AdapterView;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
 import com.akashpopat.id3tag.R;
+import com.akashpopat.id3tag.R.id;
+import com.akashpopat.id3tag.R.layout;
 import com.akashpopat.id3tag.database.SongColumns;
 import com.akashpopat.id3tag.database.SongsProvider;
+import com.akashpopat.id3tag.database.SongsProvider.Songs;
 
 /**
  * Created by akash on 11/17/16.
@@ -19,19 +24,19 @@ public class SongsWidgetRemoteViewService extends RemoteViewsService {
 
     public final String LOG_TAG = SongsWidgetRemoteViewService.class.getSimpleName();
     @Override
-    public RemoteViewsFactory onGetViewFactory(Intent intent) {
-        return new RemoteViewsFactory() {
-            private Cursor data = null;
+    public RemoteViewsService.RemoteViewsFactory onGetViewFactory(Intent intent) {
+        return new RemoteViewsService.RemoteViewsFactory() {
+            private Cursor data;
             @Override
             public void onCreate() {
             }
 
             @Override
             public void onDataSetChanged() {
-                if (data != null) {
-                    data.close();
+                if (this.data != null) {
+                    this.data.close();
                 }
-                data = getContentResolver().query(SongsProvider.Songs.CONTENT_URI,
+                this.data = SongsWidgetRemoteViewService.this.getContentResolver().query(Songs.CONTENT_URI,
                         new String[] {"Distinct "+ SongColumns.TITLE,SongColumns.ARTIST,SongColumns.DATA,SongColumns._ID},
                         null,
                         null,
@@ -40,40 +45,40 @@ public class SongsWidgetRemoteViewService extends RemoteViewsService {
 
             @Override
             public void onDestroy() {
-                if (data != null) {
-                    data.close();
-                    data = null;
+                if (this.data != null) {
+                    this.data.close();
+                    this.data = null;
                 }
             }
 
             @Override
             public int getCount() {
-                return data == null ? 0 : data.getCount();
+                return this.data == null ? 0 : this.data.getCount();
             }
 
             @Override
             public RemoteViews getViewAt(int position) {
                 if (position == AdapterView.INVALID_POSITION ||
-                        data == null || !data.moveToPosition(position)) {
+                        this.data == null || !this.data.moveToPosition(position)) {
                     return null;
                 }
-                RemoteViews views = new RemoteViews(getPackageName(),
-                        R.layout.songs_widget_list);
+                RemoteViews views = new RemoteViews(SongsWidgetRemoteViewService.this.getPackageName(),
+                        layout.songs_widget_list);
 
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
+                if (VERSION.SDK_INT >= VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
                     //TODO
 //                    setRemoteContentDescription(views, description);
                 }
-                views.setTextViewText(R.id.songTitleTextView, data.getString(0));
-                views.setTextViewText(R.id.songArtistTextView, data.getString(1));
+                views.setTextViewText(id.songTitleTextView, this.data.getString(0));
+                views.setTextViewText(id.songArtistTextView, this.data.getString(1));
 
                 return views;
             }
 
             @Override
             public RemoteViews getLoadingView() {
-                return new RemoteViews(getPackageName(), R.layout.songs_widget_list);
+                return new RemoteViews(SongsWidgetRemoteViewService.this.getPackageName(), layout.songs_widget_list);
             }
 
             @Override

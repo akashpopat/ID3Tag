@@ -1,6 +1,7 @@
 package com.akashpopat.id3tag.database;
 
 import android.net.Uri;
+import android.net.Uri.Builder;
 
 import net.simonvt.schematic.annotation.ContentProvider;
 import net.simonvt.schematic.annotation.ContentUri;
@@ -15,14 +16,14 @@ import net.simonvt.schematic.annotation.TableEndpoint;
 public class SongsProvider {
 
     public static final String AUTHORITY = "com.akashpopat.id3tag";
-    static final Uri BASE_CONTENT_URI = Uri.parse("content://" + AUTHORITY);
+    static final Uri BASE_CONTENT_URI = Uri.parse("content://" + SongsProvider.AUTHORITY);
 
     interface Path{
         String SONGS = "songs";
     }
 
     private static Uri buildUri(String ... paths){
-        Uri.Builder builder = BASE_CONTENT_URI.buildUpon();
+        Builder builder = SongsProvider.BASE_CONTENT_URI.buildUpon();
         for (String path : paths){
             builder.appendPath(path);
         }
@@ -31,18 +32,18 @@ public class SongsProvider {
 
     @TableEndpoint(table = SongDatabase.SONGS) public static class Songs{
         @ContentUri(
-                path = Path.SONGS,
+                path = SongsProvider.Path.SONGS,
                 type = "vnd.android.cursor.dir/songs")
-        public static final Uri CONTENT_URI = buildUri(Path.SONGS);
+        public static final Uri CONTENT_URI = SongsProvider.buildUri(SongsProvider.Path.SONGS);
 
         @InexactContentUri(
                 name = "SONGS_ID",
-                path = Path.SONGS + "/#",
+                path = SongsProvider.Path.SONGS + "/#",
                 type = "vnd.android.cursor.item/planet",
                 whereColumn = SongColumns._ID,
                 pathSegment = 1)
         public static Uri withId(long id){
-            return buildUri(Path.SONGS, String.valueOf(id));
+            return SongsProvider.buildUri(SongsProvider.Path.SONGS, String.valueOf(id));
         }
     }
 }

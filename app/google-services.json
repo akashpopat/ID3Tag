@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "118854861838",
+    "firebase_url": "https://id3-tag.firebaseio.com",
+    "project_id": "id3-tag",
+    "storage_bucket": "id3-tag.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:118854861838:android:5553e8a403717ccc",
+        "android_client_info": {
+          "package_name": "com.akashpopat.id3tag"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "118854861838-c4jqu3e8ih1mbbr08eagpcm7tnklkmqd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBv6QVFqtncGYdeQUrrpId1_a9TQGaXQww"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

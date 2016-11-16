@@ -1,5 +1,6 @@
 package com.akashpopat.id3tag;
 
+import android.R.id;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
@@ -7,7 +8,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
+import com.akashpopat.id3tag.R.layout;
+import com.akashpopat.id3tag.R.string;
 import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdRequest.Builder;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
 
@@ -22,16 +26,16 @@ public class SongDetailActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_song_detail);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.detail_toolbar);
-        setSupportActionBar(toolbar);
+        this.setContentView(layout.activity_song_detail);
+        Toolbar toolbar = (Toolbar) this.findViewById(R.id.detail_toolbar);
+        this.setSupportActionBar(toolbar);
 
         // Show the Up button in the action bar.
-        ActionBar actionBar = getSupportActionBar();
+        ActionBar actionBar = this.getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
-        setupAds();
+        this.setupAds();
         // savedInstanceState is non-null when there is fragment state
         // saved from previous configurations of this activity
         // (e.g. when rotating the screen from portrait to landscape).
@@ -46,19 +50,19 @@ public class SongDetailActivity extends AppCompatActivity {
             // using a fragment transaction.
             Bundle arguments = new Bundle();
             arguments.putString(SongDetailFragment.SONG_DATA,
-                    getIntent().getStringExtra(SongDetailFragment.SONG_DATA));
+                    this.getIntent().getStringExtra(SongDetailFragment.SONG_DATA));
             SongDetailFragment fragment = new SongDetailFragment();
             fragment.setArguments(arguments);
-            getSupportFragmentManager().beginTransaction()
+            this.getSupportFragmentManager().beginTransaction()
                     .add(R.id.song_detail_container, fragment)
                     .commit();
         }
     }
 
     private void setupAds() {
-        MobileAds.initialize(getApplicationContext(),getString(R.string.admob_adview_key));
-        AdView mAdView = (AdView) findViewById(R.id.adView);
-        AdRequest adRequest = new AdRequest.Builder()
+        MobileAds.initialize(this.getApplicationContext(), this.getString(string.admob_adview_key));
+        AdView mAdView = (AdView) this.findViewById(R.id.adView);
+        AdRequest adRequest = new Builder()
                 .build();
         mAdView.loadAd(adRequest);
     }
@@ -66,7 +70,7 @@ public class SongDetailActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        finish();
+        this.finish();
     }
 
     @Override
@@ -79,7 +83,7 @@ public class SongDetailActivity extends AppCompatActivity {
             //
             // http://developer.android.com/design/patterns/navigation.html#up-vs-back
             //
-            navigateUpTo(new Intent(this, SongListActivity.class));
+            this.navigateUpTo(new Intent(this, SongListActivity.class));
             return true;
         }
         return super.onOptionsItemSelected(item);
