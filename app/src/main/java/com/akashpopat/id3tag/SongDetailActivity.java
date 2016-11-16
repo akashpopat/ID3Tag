@@ -10,6 +10,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.ActionBar;
 import android.view.MenuItem;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
+
 /**
  * An activity representing a single Song detail screen. This
  * activity is only used narrow width devices. On tablet-size devices,
@@ -30,7 +34,7 @@ public class SongDetailActivity extends AppCompatActivity {
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
-
+        setupAds();
         // savedInstanceState is non-null when there is fragment state
         // saved from previous configurations of this activity
         // (e.g. when rotating the screen from portrait to landscape).
@@ -52,6 +56,20 @@ public class SongDetailActivity extends AppCompatActivity {
                     .add(R.id.song_detail_container, fragment)
                     .commit();
         }
+    }
+
+    private void setupAds() {
+        MobileAds.initialize(getApplicationContext(),"ca-app-pub-8969848292746786~7300074754");
+        AdView mAdView = (AdView) findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder()
+                .build();
+        mAdView.loadAd(adRequest);
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        finish();
     }
 
     @Override

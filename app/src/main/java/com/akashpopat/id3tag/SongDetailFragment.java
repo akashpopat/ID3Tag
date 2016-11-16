@@ -3,13 +3,24 @@ package com.akashpopat.id3tag;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
+import android.media.MediaScannerConnection;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.provider.MediaStore;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.os.Bundle;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.Snackbar;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
+import android.support.v4.media.VolumeProviderCompat;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.AppCompatSpinner;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,21 +29,33 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.mpatric.mp3agic.ID3v2;
+import com.mpatric.mp3agic.ID3v24Tag;
+import com.mpatric.mp3agic.Mp3File;
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
 
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.audio.exceptions.CannotReadException;
 import org.jaudiotagger.audio.exceptions.InvalidAudioFrameException;
 import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
+import org.jaudiotagger.audio.mp3.MP3File;
+import org.jaudiotagger.audio.mp3.MP3FileWriter;
+import org.jaudiotagger.tag.FieldDataInvalidException;
 import org.jaudiotagger.tag.FieldKey;
+import org.jaudiotagger.tag.Tag;
 import org.jaudiotagger.tag.TagException;
+import org.jaudiotagger.tag.TagOptionSingleton;
+import org.jaudiotagger.tag.images.Artwork;
+import org.jaudiotagger.tag.images.ArtworkFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.w3c.dom.Text;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -76,6 +99,7 @@ public class SongDetailFragment extends Fragment {
     TextView mArtistTextView;
     TextView mLocationTextView;
     ImageView mArtImageView;
+    View rootView;
 
     Button searchButton;
     ProgressDialog mProgress;
@@ -91,7 +115,8 @@ public class SongDetailFragment extends Fragment {
 //            mItem = DummyContent.ITEM_MAP.get(getArguments().getString(ARG_ITEM_ID));
 
             try {
-                AudioFile file = new AudioFileIO().readFile(new File(getArguments().getString(SONG_DATA)));
+                TagOptionSingleton.getInstance().setAndroid(true);
+                AudioFile file = AudioFileIO.read(new File(getArguments().getString(SONG_DATA)));
                 mLocation = getArguments().getString(SONG_DATA);
                 mTitle = file.getTag().getFirst(FieldKey.TITLE);
                 if(mTitle.equals("")){
@@ -101,13 +126,9 @@ public class SongDetailFragment extends Fragment {
                 mArt  = BitmapFactory.decodeByteArray(file.getTag().getFirstArtwork().getBinaryData(), 0, file.getTag().getFirstArtwork().getBinaryData().length);
             } catch (Exception e) {
                 e.printStackTrace();
+                mTitle = new File(getArguments().getString(SONG_DATA)).getName();
+                mLocation = getArguments().getString(SONG_DATA);
             }
-
-            Activity activity = this.getActivity();
-//            CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
-//            if (appBarLayout != null) {
-//                appBarLayout.setTitle(mTitle);
-//            }
         }
     }
 
@@ -129,6 +150,7 @@ public class SongDetailFragment extends Fragment {
             mArtistTextView = (TextView) rootView.findViewById(R.id.artistDetailText);
             mArtistTextView.setText(mArtist);
             mLocationTextView = (TextView) rootView.findViewById(R.id.locationDetailText);
+            mLocationTextView.setText(mLocation);
             mArtImageView = (ImageView) rootView.findViewById(R.id.imageDetailArt);
             mArtImageView.setImageBitmap(mArt);
             searchButton = (Button) rootView.findViewById(R.id.searchButton);
@@ -139,13 +161,14 @@ public class SongDetailFragment extends Fragment {
                 }
             });
         }
+        this.rootView = rootView;
 
         return rootView;
     }
 
     private void searchOnline(String mTitle, String mArtist) {
         mProgress = new ProgressDialog(mContext);
-        mProgress.setTitle("Searching!");
+        mProgress.setMessage("Searching!");
         mProgress.setIndeterminate(true);
         mProgress.show();
         new getShazamInfo().execute(mTitle + " " + mArtist);
@@ -158,6 +181,14 @@ public class SongDetailFragment extends Fragment {
 
         @Override
         protected void onPostExecute(String[] strings) {
+            mProgress.dismiss();
+            if(strings == null)
+            {
+                Snackbar snackbar = Snackbar
+                        .make((rootView.findViewById(R.id.detailLinear)), "No Internet :(", Snackbar.LENGTH_INDEFINITE);
+                snackbar.show();
+                return;
+            }
             postExecuteStuff(strings[0],strings[1],strings[2]);
         }
 
@@ -165,7 +196,7 @@ public class SongDetailFragment extends Fragment {
         protected String[] doInBackground(String... params) {
 
             fileName = params[0].replaceAll("%20", " ");
-            Log.d("hey","searchin shazam "+ params[0].substring(0,10));
+            Log.d("hey","searchin shazam "+ params[0].substring(0,20));
             String source = null;
 
             final HttpUrl[] cookUrl = new HttpUrl[1];
@@ -193,13 +224,17 @@ public class SongDetailFragment extends Fragment {
                     .build();
 
             try {
-                client.newCall(Frequest).execute();
+                Response r = client.newCall(Frequest).execute();
+                if(!r.isSuccessful()){
+                    return null;
+                }
             } catch (IOException e) {
                 e.printStackTrace();
+                return null;
             }
 
             Request request = new Request.Builder()
-                    .url(shazamBaseUrl + params[0].substring(0,10))
+                    .url(shazamBaseUrl + params[0].substring(0,20))
                     .build();
 
             Response response = null;
@@ -230,13 +265,140 @@ public class SongDetailFragment extends Fragment {
             return data;
         }
     }
+    Target target = new Target() {
+        @Override
+        public void onBitmapLoaded(final Bitmap bitmap, Picasso.LoadedFrom from) {
+            File file = null;
+            try {
+                file = new File(
+                        mContext.getCacheDir().getAbsolutePath()
+                                + "/." + mArtist + ".jpg");
+            }catch (Exception e){
+            }
+            try {
+                file.createNewFile();
+                FileOutputStream ostream = new FileOutputStream(file);
+                bitmap.compress(Bitmap.CompressFormat.JPEG,100,ostream);
+                ostream.close();
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
 
-    private void postExecuteStuff(String title, String artist, String albumArt) {
-        mProgress.dismiss();
+        @Override
+        public void onBitmapFailed(Drawable errorDrawable) {
+
+        }
+
+        @Override
+        public void onPrepareLoad(Drawable placeHolderDrawable) {
+
+        }
+    };
+
+    private void postExecuteStuff(final String title, final String artist, String albumArt) {
         mTitleTextView.setText(title);
         mArtistTextView.setText(artist);
 
         Picasso.with(mContext).load(albumArt).into(mArtImageView);
+        Picasso.with(mContext).load(albumArt).into(target);
+        final File artFile = new File(
+                mContext.getCacheDir().getAbsolutePath()
+                        + "/." + mArtist + ".jpg");
 
+        new AlertDialog.Builder(mContext).setTitle("Write to file ?")
+                .setMessage("Is this information correct ?\n\nTtitle: " + title+"\n\n"+"Artist: " + artist)
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        mProgress.setTitle("Writing!");
+                        mProgress.show();
+
+                        try {
+
+//                            Mp3File mp3file = new Mp3File(mLocation);
+//                            ID3v2 id3v2Tag;
+//                            if(mp3file.hasId3v1Tag())
+//                                mp3file.removeId3v1Tag();
+//                            if (mp3file.hasId3v2Tag()) {
+//                                id3v2Tag = mp3file.getId3v2Tag();
+//                            } else {
+//                                // mp3 does not have an ID3v2 tag, let's create one..
+//                                id3v2Tag = new ID3v24Tag();
+//                                mp3file.setId3v2Tag(id3v2Tag);
+//                            }
+//                            id3v2Tag.setTitle(mTitle);
+//                            id3v2Tag.setArtist(mArtist);
+//                            id3v2Tag.setAlbum("ID3TAG_"+mArtist);
+//                            Artwork artwork = ArtworkFactory.createArtworkFromFile(artFile);
+//                            id3v2Tag.setAlbumImage(artwork.getBinaryData(),"image/jpg");
+//                            mp3file.save(mLocation);
+
+//                            MP3File f = new MP3File(new File(mLocation));
+//                            MP3File f = (MP3File) AudioFileIO.read(new File(mLocation));
+
+                            Tag tag;
+                            if(mLocation.endsWith("mp3")) {
+                                MP3File f = new MP3File(new File(mLocation));
+                                tag = f.getTagAndConvertOrCreateAndSetDefault();
+                                tagThem(tag);
+//                            AudioFileIO.write(f);
+                                f.commit();
+                            }
+                            else {
+                                AudioFile f = AudioFileIO.read(new File(mLocation));
+                                tag = f.getTag();
+                                tagThem(tag);
+//                            AudioFileIO.write(f);
+                                f.commit();
+                            }
+                        } catch (Exception e) {
+                            new AlertDialog.Builder(mContext)
+                                    .setTitle("Data not written")
+                                    .setMessage("Music file is corrupted!")
+                                    .setPositiveButton("Ok",null)
+                                    .show();
+                            e.printStackTrace();
+                        }
+                        mProgress.dismiss();
+                        Snackbar snackbar = Snackbar
+                                .make((rootView.findViewById(R.id.detailLinear)), "Done!", Snackbar.LENGTH_SHORT);
+                        snackbar.show();
+                        scanFile(mContext,mLocation);
+
+                    }
+
+                    private void tagThem(Tag tag) throws FieldDataInvalidException, IOException {
+                        try {
+                            tag.deleteField(FieldKey.ARTIST);
+                            tag.deleteField(FieldKey.TITLE);
+                            tag.deleteField(FieldKey.ALBUM);
+                        }catch (Exception ignored){}
+                        tag.setField(FieldKey.ARTIST,artist);
+                        tag.setField(FieldKey.TITLE,title);
+                        tag.setField(FieldKey.ALBUM,"ID3TAG_"+artist);
+                        if(artFile.exists()) {
+                            Artwork artwork = ArtworkFactory.createArtworkFromFile(artFile);
+                            tag.addField(artwork);
+                            tag.setField(artwork);
+                        }
+                    }
+                })
+                .setNegativeButton("No",null)
+                .show();
+
+
+    }
+    public static void scanFile(Context context, String file) {
+        MediaScannerConnection.scanFile(context,
+                new String[]{file},
+                null,
+                null);
+
+        new AlertDialog.Builder(context).setTitle("Media refreshing")
+                .setMessage("You may have to restart the app in which you may want to see the change")
+                .setPositiveButton("Ok",null)
+                .show();
     }
 }

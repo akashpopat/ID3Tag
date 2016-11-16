@@ -2,18 +2,22 @@ package com.akashpopat.id3tag;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.LoaderManager;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -24,15 +28,9 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import org.jaudiotagger.audio.AudioFile;
-import org.jaudiotagger.audio.AudioFileIO;
-import org.jaudiotagger.audio.exceptions.CannotReadException;
-import org.jaudiotagger.audio.exceptions.InvalidAudioFrameException;
-import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
-import org.jaudiotagger.tag.TagException;
-
-import java.io.File;
-import java.io.IOException;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 
 
 /**
@@ -46,6 +44,7 @@ import java.io.IOException;
 public class SongListActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>{
 
     private static final int LOADER_MUSIC_ID = 9;
+    private static final int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL = 123;
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
      * device.
@@ -62,14 +61,77 @@ public class SongListActivity extends AppCompatActivity implements LoaderManager
         setSupportActionBar(toolbar);
         toolbar.setTitle(getTitle());
 
-        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.song_list);
-        assert recyclerView != null;
-        setupRecyclerView(recyclerView);
+        requestPermissions();
 
         if (findViewById(R.id.song_detail_container) != null) {
             mTwoPane = true;
         }
+    }
+
+    private void requestPermissions() {
+        // Here, thisActivity is the current activity
+        if (ContextCompat.checkSelfPermission(this,
+                android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+
+
+                ActivityCompat.requestPermissions(this,
+                        new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL);
+            }
+        else
+            restOfSetUp();
+        }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    restOfSetUp();
+
+                } else {
+                    new AlertDialog.Builder(this).setMessage("Cant use app without permission!")
+                            .setPositiveButton("Rety", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    requestPermissions();
+                                }
+                            })
+                            .setNegativeButton("Quit", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    finish();
+                                }
+                            })
+                            .show();
+
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
+    }
+
+    private void restOfSetUp() {
+        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.song_list);
+        assert recyclerView != null;
+        setupRecyclerView(recyclerView);
+        setupAds();
         getSupportLoaderManager().initLoader(LOADER_MUSIC_ID, null, this);
+    }
+
+    private void setupAds() {
+        MobileAds.initialize(getApplicationContext(),"ca-app-pub-8969848292746786~7300074754");
+        AdView mAdView = (AdView) findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder()
+                .build();
+        mAdView.loadAd(adRequest);
     }
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
@@ -125,17 +187,19 @@ public class SongListActivity extends AppCompatActivity implements LoaderManager
             holder.mTitleTextView.setText(mCursor.getString(mCursor.getColumnIndex(MediaStore.Audio.Media.TITLE)));
             holder.mArtistTextView.setText(mCursor.getString(mCursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)));
 
-            try {
-                AudioFile file = new AudioFileIO().readFile(new File(mCursor.getString(mCursor.getColumnIndex(MediaStore.Audio.Media.DATA))));
-                Bitmap bitmap = BitmapFactory.decodeByteArray(file.getTag().getFirstArtwork().getBinaryData(), 0, file.getTag().getFirstArtwork().getBinaryData().length);
-                holder.mAlbumImage.setImageBitmap(bitmap);
-            } catch (Exception e) {
-                e.printStackTrace();
-                holder.mAlbumImage.setImageBitmap(null);
+            String albumID =  mCursor.getString(mCursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID));
+            Cursor c = managedQuery(MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
+                    new String[] {MediaStore.Audio.Albums._ID, MediaStore.Audio.Albums.ALBUM_ART},
+                    MediaStore.Audio.Albums._ID+ "=?",
+                    new String[] {String.valueOf(albumID)},
+                    null);
+
+            if (c.moveToFirst()) {
+                String path = c.getString(c.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ART));
+                Drawable img = Drawable.createFromPath(path);
+                holder.mAlbumImage.setImageDrawable(img);
             }
-//            holder.mItem = mValues.get(position);
-//            holder.mIdView.setText(mValues.get(position).id);
-//            holder.mContentView.setText(mValues.get(position).content);
+
             holder.mCard.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
