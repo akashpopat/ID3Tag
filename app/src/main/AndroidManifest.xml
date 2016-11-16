@@ -34,7 +34,21 @@
         <provider
             android:authorities="com.akashpopat.id3tag"
             android:name=".database.generated.SongsProvider"
-            android:exported="false"/>
+            android:exported="true"/>
+
+        <receiver android:name=".widget.SongWidgetProvider">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.akashpopat.id3tag.ACTION_DATA_UPDATED"/>
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/song_widget_info" />
+        </receiver>
+
+        <service android:name=".widget.SongsWidgetRemoteViewService"
+            android:permission="android.permission.BIND_REMOTEVIEWS"/>
     </application>
 
 </manifest>

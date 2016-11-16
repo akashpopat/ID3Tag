@@ -5,6 +5,7 @@ import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
@@ -92,6 +93,9 @@ public class SongDetailFragment extends Fragment {
      */
     public SongDetailFragment() {
     }
+
+    public static final String ACTION_DATA_UPDATED =
+            "com.akashpopat.id3tag.ACTION_DATA_UPDATED";
 
     String mTitle;
     String mArtist;
@@ -400,7 +404,17 @@ public class SongDetailFragment extends Fragment {
         cv.put(SongColumns.DATA,mLocation);
 
         mContext.getContentResolver().insert(SongsProvider.Songs.CONTENT_URI,cv);
+        updateWidgets();
     }
+
+    private void updateWidgets() {
+        Context context = mContext;
+        // Setting the package ensures that only components in our app will receive the broadcast
+        Intent dataUpdatedIntent = new Intent(ACTION_DATA_UPDATED)
+                .setPackage(context.getPackageName());
+        context.sendBroadcast(dataUpdatedIntent);
+    }
+
 
     public static void scanFile(Context context, String file) {
         MediaScannerConnection.scanFile(context,
