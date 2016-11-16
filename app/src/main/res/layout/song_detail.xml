@@ -24,26 +24,29 @@
             tools:text="Hotline Bling"
             android:id="@+id/titleDetailText"
             android:layout_margin="5dp"
-            android:textSize="32sp"/>
+            android:maxLines="2"
+            android:textSize="30sp"/>
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             tools:text="Drake"
             android:id="@+id/artistDetailText"
+            android:maxLines="2"
             android:layout_margin="5dp"
-            android:textSize="28sp"/>
+            android:textSize="26sp"/>
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             tools:text="/sdcard/music/hotline.mp3"
             android:id="@+id/locationDetailText"
             android:layout_margin="5dp"
-            android:textSize="20sp"/>
+            android:maxLines="2"
+            android:textSize="18sp"/>
     </LinearLayout>
 </android.support.v7.widget.CardView>
 
     <Button
-        android:text="Search"
+        android:text="@string/search_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/searchButton"

@@ -2,6 +2,7 @@ package com.akashpopat.id3tag;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
@@ -29,6 +30,8 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.akashpopat.id3tag.database.SongColumns;
+import com.akashpopat.id3tag.database.SongsProvider;
 import com.mpatric.mp3agic.ID3v2;
 import com.mpatric.mp3agic.ID3v24Tag;
 import com.mpatric.mp3agic.Mp3File;
@@ -168,7 +171,7 @@ public class SongDetailFragment extends Fragment {
 
     private void searchOnline(String mTitle, String mArtist) {
         mProgress = new ProgressDialog(mContext);
-        mProgress.setMessage("Searching!");
+        mProgress.setMessage(getString(R.string.searching_dialog_msg));
         mProgress.setIndeterminate(true);
         mProgress.show();
         new getShazamInfo().execute(mTitle + " " + mArtist);
@@ -176,7 +179,7 @@ public class SongDetailFragment extends Fragment {
 
     class getShazamInfo extends AsyncTask<String,Void,String[]> {
 
-        String shazamBaseUrl = "http://www.shazam.com/fragment/search/";
+        String shazamBaseUrl = getString(R.string.shazam_api_base_url);
         String fileName;
 
         @Override
@@ -185,7 +188,7 @@ public class SongDetailFragment extends Fragment {
             if(strings == null)
             {
                 Snackbar snackbar = Snackbar
-                        .make((rootView.findViewById(R.id.detailLinear)), "No Internet :(", Snackbar.LENGTH_INDEFINITE);
+                        .make((rootView.findViewById(R.id.detailLinear)), R.string.no_internet_snackbar_msg, Snackbar.LENGTH_INDEFINITE);
                 snackbar.show();
                 return;
             }
@@ -196,7 +199,6 @@ public class SongDetailFragment extends Fragment {
         protected String[] doInBackground(String... params) {
 
             fileName = params[0].replaceAll("%20", " ");
-            Log.d("hey","searchin shazam "+ params[0].substring(0,20));
             String source = null;
 
             final HttpUrl[] cookUrl = new HttpUrl[1];
@@ -207,7 +209,7 @@ public class SongDetailFragment extends Fragment {
                         @Override
                         public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
                             cookieStore.put(url, cookies);
-                            if(url.toString().equals("http://www.shazam.com/"))
+                            if(url.toString().equals(getString(R.string.shazam_website_link)))
                                 cookUrl[0] = url;
                         }
 
@@ -220,7 +222,7 @@ public class SongDetailFragment extends Fragment {
                     .build();
 
             Request Frequest = new Request.Builder()
-                    .url("http://www.shazam.com")
+                    .url(getString(R.string.shazam_website_link))
                     .build();
 
             try {
@@ -247,7 +249,6 @@ public class SongDetailFragment extends Fragment {
             String data[] = new String[3];
             if(source != null) {
                 try {
-                    Log.d("hey",source);
                     JSONObject sourceObj = new JSONObject(source);
 
                     JSONObject trackResults = sourceObj.getJSONObject("tracksresult");
@@ -307,12 +308,12 @@ public class SongDetailFragment extends Fragment {
                 mContext.getCacheDir().getAbsolutePath()
                         + "/." + mArtist + ".jpg");
 
-        new AlertDialog.Builder(mContext).setTitle("Write to file ?")
+        new AlertDialog.Builder(mContext).setTitle(R.string.write_to_file_msg)
                 .setMessage("Is this information correct ?\n\nTtitle: " + title+"\n\n"+"Artist: " + artist)
-                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                .setPositiveButton(R.string.yes_msg, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        mProgress.setTitle("Writing!");
+                        mProgress.setTitle(getString(R.string.writing_msg));
                         mProgress.show();
 
                         try {
@@ -355,18 +356,18 @@ public class SongDetailFragment extends Fragment {
                             }
                         } catch (Exception e) {
                             new AlertDialog.Builder(mContext)
-                                    .setTitle("Data not written")
-                                    .setMessage("Music file is corrupted!")
-                                    .setPositiveButton("Ok",null)
+                                    .setTitle(R.string.data_not_written_msg)
+                                    .setMessage(R.string.file_corrupted_msg)
+                                    .setPositiveButton(R.string.ok_msg,null)
                                     .show();
                             e.printStackTrace();
                         }
                         mProgress.dismiss();
                         Snackbar snackbar = Snackbar
-                                .make((rootView.findViewById(R.id.detailLinear)), "Done!", Snackbar.LENGTH_SHORT);
+                                .make((rootView.findViewById(R.id.detailLinear)), R.string.done_msg, Snackbar.LENGTH_SHORT);
                         snackbar.show();
                         scanFile(mContext,mLocation);
-
+                        addToDB(title,artist,mLocation);
                     }
 
                     private void tagThem(Tag tag) throws FieldDataInvalidException, IOException {
@@ -377,7 +378,7 @@ public class SongDetailFragment extends Fragment {
                         }catch (Exception ignored){}
                         tag.setField(FieldKey.ARTIST,artist);
                         tag.setField(FieldKey.TITLE,title);
-                        tag.setField(FieldKey.ALBUM,"ID3TAG_"+artist);
+                        tag.setField(FieldKey.ALBUM,getString(R.string.ID3TAG_album_extra)+artist);
                         if(artFile.exists()) {
                             Artwork artwork = ArtworkFactory.createArtworkFromFile(artFile);
                             tag.addField(artwork);
@@ -385,20 +386,31 @@ public class SongDetailFragment extends Fragment {
                         }
                     }
                 })
-                .setNegativeButton("No",null)
+                .setNegativeButton(R.string.no_msg,null)
                 .show();
 
 
     }
+
+    private void addToDB(String title, String artist, String mLocation) {
+
+        ContentValues cv = new ContentValues();
+        cv.put(SongColumns.TITLE,title);
+        cv.put(SongColumns.ARTIST,artist);
+        cv.put(SongColumns.DATA,mLocation);
+
+        mContext.getContentResolver().insert(SongsProvider.Songs.CONTENT_URI,cv);
+    }
+
     public static void scanFile(Context context, String file) {
         MediaScannerConnection.scanFile(context,
                 new String[]{file},
                 null,
                 null);
 
-        new AlertDialog.Builder(context).setTitle("Media refreshing")
-                .setMessage("You may have to restart the app in which you may want to see the change")
-                .setPositiveButton("Ok",null)
+        new AlertDialog.Builder(context).setTitle(R.string.media_refreshing_msg)
+                .setMessage(R.string.restart_app_see_change_msg)
+                .setPositiveButton( R.string.ok_msg,null)
                 .show();
     }
 }

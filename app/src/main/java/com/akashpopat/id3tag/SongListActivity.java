@@ -31,6 +31,7 @@ import android.widget.TextView;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
+import com.google.firebase.analytics.FirebaseAnalytics;
 
 
 /**
@@ -51,6 +52,7 @@ public class SongListActivity extends AppCompatActivity implements LoaderManager
      */
     private boolean mTwoPane;
     SimpleItemRecyclerViewAdapter mAdapter;
+    private FirebaseAnalytics mFirebaseAnalytics;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +62,9 @@ public class SongListActivity extends AppCompatActivity implements LoaderManager
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setTitle(getTitle());
+
+        // Obtain the FirebaseAnalytics instance.
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
 
         requestPermissions();
 
@@ -94,14 +99,14 @@ public class SongListActivity extends AppCompatActivity implements LoaderManager
                     restOfSetUp();
 
                 } else {
-                    new AlertDialog.Builder(this).setMessage("Cant use app without permission!")
-                            .setPositiveButton("Rety", new DialogInterface.OnClickListener() {
+                    new AlertDialog.Builder(this).setMessage(R.string.permission_dialog_msg)
+                            .setPositiveButton(R.string.retry_msg, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
                                     requestPermissions();
                                 }
                             })
-                            .setNegativeButton("Quit", new DialogInterface.OnClickListener() {
+                            .setNegativeButton(R.string.quit_msg, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
                                     finish();
@@ -127,7 +132,7 @@ public class SongListActivity extends AppCompatActivity implements LoaderManager
     }
 
     private void setupAds() {
-        MobileAds.initialize(getApplicationContext(),"ca-app-pub-8969848292746786~7300074754");
+        MobileAds.initialize(getApplicationContext(),getString(R.string.admob_adview_key));
         AdView mAdView = (AdView) findViewById(R.id.adView);
         AdRequest adRequest = new AdRequest.Builder()
                 .build();
@@ -151,7 +156,7 @@ public class SongListActivity extends AppCompatActivity implements LoaderManager
         if(data.getCount() == 0)
         {
             Snackbar snackbar = Snackbar
-                    .make(((CoordinatorLayout)findViewById(R.id.coordLayout)), "No songs on Device :(", Snackbar.LENGTH_INDEFINITE);
+                    .make(((CoordinatorLayout)findViewById(R.id.coordLayout)), R.string.no_songs_msg, Snackbar.LENGTH_INDEFINITE);
             snackbar.show();
         }
     }

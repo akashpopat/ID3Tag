@@ -2,4 +2,25 @@
     <string name="app_name">ID3 Tag</string>
     <string name="title_song_detail">Song Detail</string>
     <string name="banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>
+    <string name="admob_adview_key">ca-app-pub-8969848292746786~7300074754</string>
+    <string name="searching_dialog_msg">Searching!</string>
+    <string name="shazam_api_base_url">http://www.shazam.com/fragment/search/</string>
+    <string name="no_internet_snackbar_msg">No Internet :(</string>
+    <string name="shazam_website_link">http://www.shazam.com/</string>
+    <string name="write_to_file_msg">Write to file ?</string>
+    <string name="yes_msg">Yes</string>
+    <string name="writing_msg">Writing!</string>
+    <string name="data_not_written_msg">Data not written</string>
+    <string name="file_corrupted_msg">Music file is corrupted!</string>
+    <string name="ok_msg">Ok</string>
+    <string name="done_msg">Done!</string>
+    <string name="ID3TAG_album_extra">ID3TAG_</string>
+    <string name="no_msg">No</string>
+    <string name="media_refreshing_msg">Media refreshing</string>
+    <string name="restart_app_see_change_msg">You may have to restart the app in which you may want to see the change</string>
+    <string name="permission_dialog_msg">Cant use app without permission!</string>
+    <string name="retry_msg">Retry</string>
+    <string name="quit_msg">Quit</string>
+    <string name="no_songs_msg">No songs on Device :(</string>
+    <string name="search_button">Search</string>
 </resources>

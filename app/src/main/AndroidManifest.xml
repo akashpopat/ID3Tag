@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.akashpopat.id3tag">
-<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:allowBackup="true"
@@ -29,6 +31,10 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.akashpopat.id3tag.SongListActivity" />
         </activity>
+        <provider
+            android:authorities="com.akashpopat.id3tag"
+            android:name=".database.generated.SongsProvider"
+            android:exported="false"/>
     </application>
 
 </manifest>
