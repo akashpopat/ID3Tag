@@ -22,7 +22,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            tools:text="Hotline Bling"
+            tools:text="@string/test_song_title"
             android:id="@+id/titleDetailText"
             android:layout_margin="5dp"
             android:maxLines="2"
@@ -30,7 +30,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            tools:text="Drake"
+            tools:text="@string/test_song_artist"
             android:id="@+id/artistDetailText"
             android:maxLines="2"
             android:layout_margin="5dp"
@@ -38,7 +38,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            tools:text="/sdcard/music/hotline.mp3"
+            tools:text="@string/test_song_location"
             android:id="@+id/locationDetailText"
             android:layout_margin="5dp"
             android:maxLines="2"
@@ -52,6 +52,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/searchButton"
         android:drawableStart="@android:drawable/ic_menu_search"
-        android:layout_gravity="center"/>
+        android:layout_gravity="center"
+        android:contentDescription="@string/search_button_content_description" />
 
 </LinearLayout>

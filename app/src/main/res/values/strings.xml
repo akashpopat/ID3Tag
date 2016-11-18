@@ -28,4 +28,10 @@
     <string name="album_image_content_description">Album Image</string>
     <string name="advertisment">advertisment</string>
     <string name="search_button_content_description">Search Button</string>
+    <string name="test_song_title">Hotline Bling</string>
+    <string name="test_song_artist">Drake</string>
+    <string name="test_song_location">/sdcard/music/hotline.mp3</string>
+    <string name="correct_info_msg">"Is this information correct ?\n\nTtitle: "</string>
+    <string name="artist_msg">"Artist: "</string>
+    <string name="line_break">\n\n</string>
 </resources>

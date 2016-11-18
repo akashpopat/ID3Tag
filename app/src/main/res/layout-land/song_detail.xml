@@ -26,21 +26,21 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    tools:text="Hotline Bling"
+                    tools:text="@string/test_song_title"
                     android:id="@+id/titleDetailText"
                     android:layout_margin="3dp"
                     android:textSize="24sp"/>
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    tools:text="Drake"
+                    tools:text="@string/test_song_artist"
                     android:id="@+id/artistDetailText"
                     android:layout_margin="3dp"
                     android:textSize="22sp"/>
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    tools:text="/sdcard/music/hotline.mp3"
+                    tools:text="@string/test_song_location"
                     android:id="@+id/locationDetailText"
                     android:layout_margin="3dp"
                     android:textSize="20sp"/>

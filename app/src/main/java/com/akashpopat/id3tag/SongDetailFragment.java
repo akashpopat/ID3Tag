@@ -1,6 +1,5 @@
 package com.akashpopat.id3tag;
 
-import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
@@ -12,20 +11,11 @@ import android.graphics.Bitmap.CompressFormat;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.media.MediaScannerConnection;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.AsyncTask;
-import android.provider.MediaStore;
-import android.support.design.widget.CollapsingToolbarLayout;
 import android.os.Bundle;
-import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
-import android.support.v4.media.VolumeProviderCompat;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AlertDialog.Builder;
-import android.support.v7.widget.AppCompatSpinner;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -38,33 +28,23 @@ import com.akashpopat.id3tag.R.id;
 import com.akashpopat.id3tag.R.layout;
 import com.akashpopat.id3tag.R.string;
 import com.akashpopat.id3tag.database.SongColumns;
-import com.akashpopat.id3tag.database.SongsProvider;
 import com.akashpopat.id3tag.database.SongsProvider.Songs;
-import com.mpatric.mp3agic.ID3v2;
-import com.mpatric.mp3agic.ID3v24Tag;
-import com.mpatric.mp3agic.Mp3File;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Picasso.LoadedFrom;
 import com.squareup.picasso.Target;
 
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
-import org.jaudiotagger.audio.exceptions.CannotReadException;
-import org.jaudiotagger.audio.exceptions.InvalidAudioFrameException;
-import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
 import org.jaudiotagger.audio.mp3.MP3File;
-import org.jaudiotagger.audio.mp3.MP3FileWriter;
 import org.jaudiotagger.tag.FieldDataInvalidException;
 import org.jaudiotagger.tag.FieldKey;
 import org.jaudiotagger.tag.Tag;
-import org.jaudiotagger.tag.TagException;
 import org.jaudiotagger.tag.TagOptionSingleton;
 import org.jaudiotagger.tag.images.Artwork;
 import org.jaudiotagger.tag.images.ArtworkFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.w3c.dom.Text;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -320,7 +300,7 @@ public class SongDetailFragment extends Fragment {
                         + "/." + this.mArtist + ".jpg");
 
         new Builder(this.mContext).setTitle(string.write_to_file_msg)
-                .setMessage("Is this information correct ?\n\nTtitle: " + title+"\n\n"+"Artist: " + artist)
+                .setMessage(getString(string.correct_info_msg) + title + getString(string.line_break) + getString(string.artist_msg) + artist)
                 .setPositiveButton(string.yes_msg, new OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
